@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Aliases
+## benchmarking
+alias loadtime="time ZSH_DEBUGRC=1 zsh -i -c exit"
+
 # Easier navigation: .., ..., ...., ....., ~ and -
 alias ..="cd .."
 alias ...="cd ../.."
@@ -8,12 +12,35 @@ alias .....="cd ../../../.."
 alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
-# Shortcuts
-alias d="cd ~/Documents/Dropbox"
+## common shortcuts
+alias sudo='sudo '                                  # allow passing of aliases to sudo
+alias mb='micromamba'                               # micromamba
+alias conda='micromamba'                            # conda aliased to micromamba
+alias repos='cd ~/repos'
+alias zsh-rl='exec zsh'                             # reload the zshrc file
+alias zsh-rs='exec zsh'                             # reset the shell
+alias omz-rl='omz reload'
+alias path='echo -e ${PATH//:/\\n}'                 # print the PATH variable with newlines
+alias fpath='echo -e ${FPATH//:/\\n}'               # same for FPATH
+alias symf="/usr/local/bin/symf-aarch64-macos"
+alias icloud='cd /Users/Sami/Library/Mobile Documents/com~apple~CloudDocs'
 alias dl="cd ~/Downloads"
-alias dt="cd ~/Desktop"
-alias p="cd ~/projects"
+alias re="cd ~/Repos"
 alias g="git"
+
+## directory operations
+alias '~'='cd ~'
+alias ..='cd ../'
+alias .3='cd ../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../../'
+alias .6='cd ../../../../../../'
+alias mv='mv -iv'
+alias cp='cp -iv'
+alias rm='rm -i'
+alias rmd='rm -rf'
+alias cpwd='pwd | tr -d "\n" | pbcopy'
+alias mkdir='mkdir -pv'
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
@@ -24,17 +51,51 @@ else # macOS `ls`
 	export LSCOLORS='BxBxhxDxfxhxhxhxhxcxcx'
 fi
 
-# List all files colorized in long format
-alias l="ls -lF ${colorflag}"
+alias ls="command ls ${colorflag}"										# Always use color output for `ls`
+alias l="ls -lF ${colorflag}"											# List all colorized long
+alias lsd="ls -lF ${colorflag} | grep --color=never '^d'"				# List only directories
 
-# List all files colorized in long format, excluding . and ..
-alias la="ls -lAF ${colorflag}"
 
-# List only directories
-alias lsd="ls -lF ${colorflag} | grep --color=never '^d'"
+## eza (explore directory)
+# alias l='eza --git --color=always --group-directories-first --icons'   # simple content list
+alias ls='eza --git --color=always --group-directories-first --icons'    # simple content list
+alias ll='eza -lbG --git --icons --no-user'                              # detailed content
+alias llm='eza -lbG --git --icons --no-user --sort=modified'             # sorted (modified)
+alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale'    # all details
+alias lx='eza -lbhHigUmuSa@ --git --color-scale'                         # include identifiers
+### specialty views
+alias l.='eza -1'                                                        # parent dir
+alias lf="eza -a | grep -E '^\.'"                                        # clean filenames
+alias numFiles='echo $(ls -1 | wc -l)' 
 
-# Always use color output for `ls`
-alias ls="command ls ${colorflag}"
+## networks
+alias lsock='sudo /usr/sbin/lsof -i -P'                                  # lsof ports
+alias lsockU='sudo /usr/sbin/lsof -nP | grep UDP'                        # lsof UDP ports
+alias netCons='lsof -i'                                                  # all network connections
+alias iplocal="ipconfig getifaddr en0"                                   # private ip
+alias ippublic='echo $(curl -sS -4 ifconfig.me)'                         # public ip
+alias ipinfo0='ipconfig getpacket en0'                                   # ip info @ en0
+alias ipinfo1='ipconfig getpacket en1'                                   # ip info @ en1
+alias openports='sudo lsof -i | grep LISTEN'                             # open ports
+alias bandwhich='sudo bandwhich'                                         # terminal bandwhidth utilisation tool
+alias lHardPorts='networksetup -listallhardwareports'                    # list hardware ports
+alias flushdns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder" # flush dnsi
+## list which TCP node ports/processes are engaged by which processes/port
+function listening() {
+    if [ $# -eq 0 ]; then
+        sudo lsof -iTCP -sTCP:LISTEN -n -P
+    elif [ $# -eq 1 ]; then
+        sudo lsof -iTCP -sTCP:LISTEN -n -P | grep -i --color $1
+    else
+        echo "Usage: listening [pattern]"
+    fi
+}                                  # file counts
+
+## git operations
+alias release='git-release'
+alias undopush='git push -f origin HEAD^:master'
+alias changelog='git changelog'
+alias rename-tag='git rename-tag'
 
 # Always enable colored `grep` output
 # Note: `GREP_OPTIONS="--color=auto"` is deprecated, hence the alias usage.
@@ -45,15 +106,42 @@ alias egrep='egrep --color=auto'
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
 
+# User functions
+## fpath: /usr/local/share/zsh/site-functions/
+autoload -U zsh-lt
+
+## general aliases
+alias ax='chmod a+x'
+alias hsi='history | grep -iE'            # history search (interactive)
+alias ddf='sudo docker system df'         # docker disk usage
+alias less='less -RXqeNF'                 # tidy and preserve less output, with syntax highlights
+alias shfmt='shfmt -ci -bn -i 2'          # auto format shell scripts
+alias fsh-theme='fast-theme'              # fast-syntax-highlighting - change theme
+alias fsh-themes='fast-theme -l'          # fast-syntax-highlighting - list themes
+alias make1mb='mkfile 1m ./1MB.dat'       # make 1mb file
+alias make5mb='mkfile 5m ./5MB.dat'       # make 5mb file
+alias imgcat='/Users/Sami/.iterm2/imgcat' # imgcat
+# cpu consumers
+alias cpu-hogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
+# turn on spotlight (metadata server)
+alias spot-on='sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist'
+# turn off spotlight (metadata server)
+alias spot-off='sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist'
+# alias npm-exec='PATH=$(npm bin):$PATH'  # npm exec
+alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"'
+
 # Get week number
 alias week='date +%V'
 
 # Get macOS Software Updates, and update installed Ruby gems, Homebrew, npm, and their installed packages
 alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup; npm install npm -g; npm update -g; sudo gem update --system; sudo gem update; sudo gem cleanup'
 
-# Google Chrome
-alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
-alias canary='/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary'
+## Apps
+alias ldns="/Applications/DNSMonitor.app/Contents/MacOS/DNSMonitor"      # DNS monitor app
+alias lproc='sudo /Applications/ProcessMonitor.app/Contents/MacOS/ProcessMonitor -skipApple -pretty' # ProcessMonitor app
+
+# Zen browser
+alias zen='/Applications/Zen\ Browser.app/Contents/MacOS/zen'
 
 # IP addresses
 alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
@@ -95,12 +183,8 @@ alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'"
 
 # Show/hide hidden files in Finder
-alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
-alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
-
-# Hide/show all desktop icons (useful when presenting)
-alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
-alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+# alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+# alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
 
 # URL-encode strings
 alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
@@ -108,11 +192,6 @@ alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.ar
 # Merge PDF files, preserving hyperlinks
 # Usage: `mergepdf input{1,2,3}.pdf`
 alias mergepdf='gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=_merged.pdf'
-
-# Disable Spotlight
-alias spotoff="sudo mdutil -a -i off"
-# Enable Spotlight
-alias spoton="sudo mdutil -a -i on"
 
 # PlistBuddy alias, because sometimes `defaults` just doesn’t cut it
 alias plistbuddy="/usr/libexec/PlistBuddy"
@@ -130,19 +209,46 @@ for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
 	alias "${method}"="lwp-request -m '${method}'"
 done
 
+## iterm2 operations
+alias it2ul='/Users/Sami/.iterm2/it2ul'
+alias it2git='/Users/Sami/.iterm2/it2git'
+alias it2copy='/Users/Sami/.iterm2/it2copy'
+alias it2check='/Users/Sami/.iterm2/it2check'
+alias it2getvar='/Users/Sami/.iterm2/it2getvar'
+alias it2profile='/Users/Sami/.iterm2/it2profile'
+alias it2setcolor='/Users/Sami/.iterm2/it2setcolor'
+alias it2attention='/Users/Sami/.iterm2/it2attention'
+alias it2universion='/Users/Sami/.iterm2/it2universion'
+alias it2setkeylabel='/Users/Sami/.iterm2/it2setkeylabel'
+
 # Stuff I never really use but cannot delete either because of http://xkcd.com/530/
 alias stfu="osascript -e 'set volume output muted true'"
 alias pumpitup="osascript -e 'set volume output volume 100'"
 
 # Kill all the tabs in Chrome to free up memory
 # [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
-alias chromekill="ps ux | grep '[C]hrome Helper --type=renderer' | grep -v extension-process | tr -s ' ' | cut -d ' ' -f2 | xargs kill"
+# alias chromekill="ps ux | grep '[C]hrome Helper --type=renderer' | grep -v extension-process | tr -s ' ' | cut -d ' ' -f2 | xargs kill"
+
+## colors
+export red="[91m"
+export blue="[38;5;38m"
+export green="[38;5;82m"
+export yellow="[93m"
+export purple="[38;5;171m"
+export gray="[38;5;250m"
+export white="[38;5;231m"
+export bold="[1m"
+export LSCOLORS="GxFxCxDxCxegedabagaced"
+
+## common misspellings
+alias brwe='brew'
+alias ehco='echo'
 
 # Lock the screen (when going AFK)
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 
 # Reload the shell (i.e. invoke as a login shell)
-alias reload="exec ${SHELL} -l"
+alias sh-rl="exec ${SHELL} -l"
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
