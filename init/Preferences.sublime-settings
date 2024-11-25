@@ -1,10 +1,9 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/Solarized (Dark).tmTheme",
+	"color_scheme": "ayu-mirage.sublime-color-scheme",
 	"default_encoding": "UTF-8",
 	"default_line_ending": "unix",
 	"detect_indentation": false,
-	"draw_white_space": "all",
-	"ensure_newline_at_eof_on_save": false,
+	"ensure_newline_at_eof_on_save": true,
 	"file_exclude_patterns":
 	[
 		".DS_Store",
@@ -20,11 +19,15 @@
 		".git",
 		"node_modules"
 	],
-	"font_face": "Monaco",
-	"font_size": 13,
+	"theme": "ayu-dark.sublime-theme",
+	"font_face": "MesloLGM Nerd Font",
+	"font_size": 12,
+	 "caret_style": "smooth",
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
-	"line_padding_bottom": 5,
+	"line_padding_top": 2,
+	"line_padding_bottom": 3,
+	"highlight_line": true,
 	"match_brackets": true,
 	"match_brackets_angle": true,
 	"remember_open_files": false,
@@ -36,6 +39,7 @@
 	"show_line_endings": true,
 	"tab_size": 2,
 	"translate_tabs_to_spaces": false,
-	"trim_trailing_white_space_on_save": true,
-	"word_wrap": true
+	"trim_trailing_white_space_on_save": "all",
+	"word_wrap": true,
+	"enable_telemetry": false,
 }
