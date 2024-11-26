@@ -1,0 +1,116 @@
+#!/usr/bin/env zsh
+
+# Shell prompt based on the Solarized Dark theme.
+# Screenshot: http://i.imgur.com/EkEtphC.png
+# Heavily inspired by @necolas's prompt: https://github.com/necolas/dotfiles
+# iTerm → Profiles → Text → use 13pt Monaco with 1.1 vertical spacing.
+
+if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
+    export TERM='gnome-256color'
+elif infocmp xterm-256color >/dev/null 2>&1; then
+    export TERM='xterm-256color'
+fi
+
+# Git status indicators
+prompt_git() {
+    local ref dirty
+    if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
+        dirty=$(parse_git_dirty)
+        ref=$(git symbolic-ref HEAD 2> /dev/null) || ref="➦ $(git rev-parse --short HEAD 2> /dev/null)"
+        if [[ -n $dirty ]]; then
+            prompt_segment yellow black
+        else
+            prompt_segment green black
+        fi
+
+        local branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
+            git describe --all --exact-match HEAD 2> /dev/null || \
+            git rev-parse --short HEAD 2> /dev/null || \
+            echo '(unknown)')"
+
+        local marks
+        # Check for various repo states
+        repoUrl="$(git config --get remote.origin.url)"
+        if grep -q 'chromium/src.git' <<< "${repoUrl}"; then
+            marks="*"
+        else
+            # Check for uncommitted changes in the index.
+            if ! $(git diff --quiet --ignore-submodules --cached); then
+                marks+="+";
+            fi
+            # Check for unstaged changes.
+            if ! $(git diff-files --quiet --ignore-submodules --); then
+                marks+="!";
+            fi
+            # Check for untracked files.
+            if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+                marks+="?";
+            fi
+            # Check for stashed files.
+            if $(git rev-parse --verify refs/stash &>/dev/null); then
+                marks+="\$";
+            fi
+        fi
+
+        [ -n "${marks}" ] && marks=" [${marks}]"
+        echo -n "${branchName}${marks}"
+    fi
+}
+
+if tput setaf 1 &> /dev/null; then
+    tput sgr0 # Reset colors
+    bold=$(tput bold)
+    reset=$(tput sgr0)
+    # Solarized colors
+    black=$(tput setaf 0)
+    blue=$(tput setaf 33)
+    cyan=$(tput setaf 37)
+    green=$(tput setaf 64)
+    orange=$(tput setaf 166)
+    purple=$(tput setaf 125)
+    red=$(tput setaf 124)
+    violet=$(tput setaf 61)
+    white=$(tput setaf 15)
+    yellow=$(tput setaf 136)
+else
+    bold=''
+    reset="%f"
+    black="%F{black}"
+    blue="%F{blue}"
+    cyan="%F{cyan}"
+    green="%F{green}"
+    orange="%F{yellow}"
+    purple="%F{magenta}"
+    red="%F{red}"
+    violet="%F{magenta}"
+    white="%F{white}"
+    yellow="%F{yellow}"
+fi
+
+# Highlight the user name when logged in as root.
+if [[ "${USER}" == "root" ]]; then
+    userStyle="%F{red}"
+else
+    userStyle="%F{yellow}"
+fi
+
+# Highlight the hostname when connected via SSH.
+if [[ "${SSH_TTY}" ]]; then
+    hostStyle="%F{red}%B"
+else
+    hostStyle="%F{yellow}"
+fi
+
+# Set up the prompt
+setopt PROMPT_SUBST
+
+# Main prompt
+PROMPT='${bold}
+${userStyle}%n%f %F{white}at ${hostStyle}%m%f %F{white}in %F{green}%~%f$(prompt_git "%F{white} on %F{magenta}" "%F{blue}")
+%F{white}%(!.#.$) %f${reset}'
+
+# Right prompt for command execution time and status
+RPROMPT='%F{yellow}%*%f'
+
+# Secondary prompt, printed when the shell needs more information to complete a command.
+PS2="%F{yellow}→ %f"

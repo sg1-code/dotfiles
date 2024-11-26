@@ -11,6 +11,10 @@ brew upgrade
 # Save Homebrew’s installed location.
 BREW_PREFIX=$(brew --prefix)
 
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
+tap "lotyp/homebrew-formulae" # needed for dockutil
+
 # Install GNU core utilities (those that come with macOS are outdated).
 # Don’t forget to add `$(brew --prefix coreutils)/libexec/gnubin` to `$PATH`.
 brew install coreutils
@@ -21,25 +25,25 @@ brew install moreutils
 # Install GNU `find`, `locate`, `updatedb`, and `xargs`, `g`-prefixed.
 brew install findutils
 # Install GNU `sed`, overwriting the built-in `sed`.
-brew install gnu-sed --with-default-names
+brew install gnu-sed
 # Install a modern version of Bash.
 brew install bash
 brew install bash-completion2
 
 # Switch to using brew-installed bash as default shell
-if ! fgrep -q "${BREW_PREFIX}/bin/bash" /etc/shells; then
-  echo "${BREW_PREFIX}/bin/bash" | sudo tee -a /etc/shells;
-  chsh -s "${BREW_PREFIX}/bin/bash";
-fi;
+# if ! fgrep -q "${BREW_PREFIX}/bin/bash" /etc/shells; then
+#   echo "${BREW_PREFIX}/bin/bash" | sudo tee -a /etc/shells;
+#   chsh -s "${BREW_PREFIX}/bin/bash";
+# fi;
 
 # Install `wget` with IRI support.
-brew install wget --with-iri
+brew install wget
 
 # Install GnuPG to enable PGP-signing commits.
 brew install gnupg
 
 # Install more recent versions of some macOS tools.
-brew install vim --with-override-system-vi
+brew install vim
 brew install grep
 brew install openssh
 brew install screen
@@ -84,7 +88,7 @@ brew install ack
 brew install git
 brew install git-lfs
 brew install gs
-brew install imagemagick --with-webp
+brew install imagemagick
 brew install lua
 brew install lynx
 brew install p7zip
@@ -99,3 +103,25 @@ brew install zopfli
 
 # Remove outdated versions from the cellar.
 brew cleanup
+
+# User specific binaries
+brew "bandwhich" # network utilization tool (needs sudo)
+brew "eza" # better ls (fork of exa, which is unmaintained)
+brew "fzf" # fuzzy search (used by zsh fzf-tab for autocomplete)
+brew "jq" # parse json from bash
+brew "starship"
+brew "tealdeer" # aint nobody got time for that
+brew "yazi" # TUI file manager with preview
+brew "zsh"
+brew "zsh-completions"
+brew "zsh-history-substring-search"
+brew "zsh-syntax-highlighting"
+
+cask "docker"
+cask "zen-browser"
+cask "iterm2"
+cask "qlmarkdown"
+cask "quicklook-json"
+cask "warp"
+cask "sublime-text"
+cask "font-symbols-only-nerd-font" # needed by yazi
